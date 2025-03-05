@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Soul</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            margin-bottom: 15px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+        }
+
+        .card-preview {
+            min-height: 100px;
+        }
+
+        .card-preview ul {
+            list-style: none;
+        }
+
+        /* 二级页面样式 */
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .back-btn {
+            padding: 8px 15px;
+            background: none;
+            color: #333;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 20px;
+            font-size: 24px;
+        }
+
+        .items-container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 400px;
+            position: relative;
+        }
+
+        #items-list {
+            list-style: none;
+        }
+
+        #items-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .delete-btn {
+            color: #333;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2em;
+        }
+
+        .add-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #333;
+            color: white;
+            border: none;
+            font-size: 30px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* 弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 10px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        #item-input {
+            width: 100%;
+            padding: 10px;
+            margin: 15px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .modal-buttons button {
+            padding: 8px 15px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 30% auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 主页面 -->
+    <div class="container" id="main-page">
+        <h1>My Soul</h1>
+        
+        <div class="cards-grid">
+            <div class="card" onclick="showSecondPage('wants')">
+                <h2>我要的</h2>
+                <div class="card-preview">
+                    <ul id="wants-preview"></ul>
+                </div>
+            </div>
+
+            <div class="card" onclick="showSecondPage('likes')">
+                <h2>我喜欢</h2>
+                <div class="card-preview">
+                    <ul id="likes-preview"></ul>
+                </div>
+            </div>
+
+            <div class="card" onclick="showSecondPage('hates')">
+                <h2>我讨厌</h2>
+                <div class="card-preview">
+                    <ul id="hates-preview"></ul>
+                </div>
+            </div>
+
+            <div class="card" onclick="showSecondPage('tries')">
+                <h2>我想试</h2>
+                <div class="card-preview">
+                    <ul id="tries-preview"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 二级页面 -->
+    <div class="container" id="second-page" style="display: none;">
+        <div class="header">
+            <button class="back-btn" onclick="showMainPage()">←</button>
+            <h2 id="second-page-title"></h2>
+        </div>
+        
+        <div class="items-container">
+            <ul id="items-list"></ul>
+        </div>
+
+        <button class="add-btn" onclick="openModal()">+</button>
+    </div>
+
+    <!-- 弹窗 -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>添加新项目</h2>
+            <input type="text" id="item-input" placeholder="输入内容">
+            <div class="modal-buttons">
+                <button onclick="addItem()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentCategory = '';
+
+        // 显示二级页面
+        function showSecondPage(category) {
+            currentCategory = category;
+            document.getElementById('main-page').style.display = 'none';
+            document.getElementById('second-page').style.display = 'block';
+            
+            const titles = {
+                wants: '我要的',
+                tries: '我想试',
+                hates: '我讨厌',
+                likes: '我喜欢'
+            };
+            
+            document.getElementById('second-page-title').textContent = titles[category];
+            loadItems();
+        }
+
+        // 返回主页面
+        function showMainPage() {
+            document.getElementById('second-page').style.display = 'none';
+            document.getElementById('main-page').style.display = 'block';
+            updatePreviews();
+        }
+
+        // 打开弹窗
+        function openModal() {
+            const modal = document.getElementById('modal');
+            modal.style.display = 'block';
+            document.getElementById('item-input').value = '';
+            document.getElementById('item-input').focus();
+        }
+
+        // 关闭弹窗
+        document.querySelector('.close').onclick = function() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        // 点击弹窗外部关闭
+        window.onclick = function(event) {
+            const modal = document.getElementById('modal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // 添加项目
+        function addItem() {
+            const input = document.getElementById('item-input');
+            const text = input.value.trim();
+            
+            if (text) {
+                const items = getItems();
+                items.push(text);
+                saveItems(items);
+                loadItems();
+                document.getElementById('modal').style.display = 'none';
+                updatePreviews();
+            }
+        }
+
+        // 删除项目
+        function deleteItem(index) {
+            const items = getItems();
+            items.splice(index, 1);
+            saveItems(items);
+            loadItems();
+            updatePreviews();
+        }
+
+        // 加载项目列表
+        function loadItems() {
+            const items = getItems();
+            const list = document.getElementById('items-list');
+            list.innerHTML = '';
+            
+            items.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span>${item}</span>
+                    <button class="delete-btn" onclick="deleteItem(${index})">×</button>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        // 更新主页面预览
+        function updatePreviews() {
+            ['wants', 'likes', 'hates', 'tries'].forEach(category => {
+                const items = JSON.parse(localStorage.getItem(category) || '[]');
+                const preview = document.getElementById(`${category}-preview`);
+                preview.innerHTML = '';
+                
+                // 只显示前3个项目
+                items.slice(0, 3).forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = item;
+                    preview.appendChild(li);
+                });
+            });
+        }
+
+        // 获取当前分类的项目
+        function getItems() {
+            return JSON.parse(localStorage.getItem(currentCategory) || '[]');
+        }
+
+        // 保存项目
+        function saveItems(items) {
+            localStorage.setItem(currentCategory, JSON.stringify(items));
+        }
+
+        // 页面加载时更新预览
+        window.onload = updatePreviews;
+    </script>
+</body>
+</html>
