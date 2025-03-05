@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Soul</title>
+    <!-- 添加 Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <style>
         * {
             margin: 0;
@@ -250,6 +253,19 @@
     </div>
 
     <script>
+        // Firebase 配置
+        const firebaseConfig = {
+            apiKey: "AIzaSyB7tMwJ5PJs8PlXutBWBnJCB806Rla_dGo",
+            authDomain: "my-soul-e4866.firebaseapp.com",
+            projectId: "my-soul-e4866",
+            storageBucket: "my-soul-e4866.firebasestorage.app",
+            messagingSenderId: "575090649561",
+            appId: "1:575090649561:web:940a36a54d27dd512a91c8"
+        };
+
+        // 初始化 Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
         let currentCategory = '';
 
         // 显示二级页面
@@ -298,69 +314,67 @@
         }
 
         // 添加项目
-        function addItem() {
+        async function addItem() {
             const input = document.getElementById('item-input');
             const text = input.value.trim();
             
             if (text) {
-                const items = getItems();
-                items.push(text);
-                saveItems(items);
-                loadItems();
+                await db.collection(currentCategory).add({
+                    text: text,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
                 document.getElementById('modal').style.display = 'none';
+                loadItems();
                 updatePreviews();
             }
         }
 
         // 删除项目
-        function deleteItem(index) {
-            const items = getItems();
-            items.splice(index, 1);
-            saveItems(items);
+        async function deleteItem(id) {
+            await db.collection(currentCategory).doc(id).delete();
             loadItems();
             updatePreviews();
         }
 
         // 加载项目列表
-        function loadItems() {
-            const items = getItems();
+        async function loadItems() {
+            const snapshot = await db.collection(currentCategory)
+                .orderBy('timestamp', 'desc')
+                .get();
+            
             const list = document.getElementById('items-list');
             list.innerHTML = '';
             
-            items.forEach((item, index) => {
+            snapshot.forEach(doc => {
                 const li = document.createElement('li');
                 li.innerHTML = `
-                    <span>${item}</span>
-                    <button class="delete-btn" onclick="deleteItem(${index})">×</button>
+                    <span>${doc.data().text}</span>
+                    <button class="delete-btn" onclick="deleteItem('${doc.id}')">×</button>
                 `;
                 list.appendChild(li);
             });
         }
 
         // 更新主页面预览
-        function updatePreviews() {
-            ['wants', 'likes', 'hates', 'tries'].forEach(category => {
-                const items = JSON.parse(localStorage.getItem(category) || '[]');
+        async function updatePreviews() {
+            const categories = ['wants', 'likes', 'hates', 'tries'];
+            
+            for (const category of categories) {
+                const snapshot = await db.collection(category)
+                    .orderBy('timestamp', 'desc')
+                    .limit(3)
+                    .get();
+                
                 const preview = document.getElementById(`${category}-preview`);
                 preview.innerHTML = '';
                 
-                // 只显示前3个项目
-                items.slice(0, 3).forEach(item => {
+                snapshot.forEach(doc => {
                     const li = document.createElement('li');
-                    li.textContent = item;
+                    li.textContent = doc.data().text;
                     preview.appendChild(li);
                 });
-            });
-        }
-
-        // 获取当前分类的项目
-        function getItems() {
-            return JSON.parse(localStorage.getItem(currentCategory) || '[]');
-        }
-
-        // 保存项目
-        function saveItems(items) {
-            localStorage.setItem(currentCategory, JSON.stringify(items));
+            }
         }
 
         // 页面加载时更新预览
