@@ -4,23 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Soul</title>
-    <!-- 网站图标 -->
-    <link rel="icon" type="image/svg+xml" href="ghost.svg">
-    <!-- iOS 图标 -->
-    <link rel="apple-touch-icon" href="ghost.svg">
-    <!-- Android 图标 -->
-    <link rel="icon" type="image/svg+xml" sizes="any" href="ghost.svg">
-    <!-- 华为浏览器图标支持 -->
-    <meta name="huawei-content-type" content="webapp">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#333333">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <!-- 移动设备图标 -->
+    <link rel="apple-touch-icon" href="icon.png">
     <meta name="mobile-web-app-capable" content="yes">
-    <link rel="huawei-touch-icon" href="ghost.svg">
+    <link rel="shortcut icon" href="icon.png">
     <!-- PWA 相关设置 -->
     <meta name="theme-color" content="#ffffff">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="My Soul">
-    <!-- 针对 Safari 的特殊处理 -->
-    <link rel="mask-icon" href="ghost.svg" color="#000000">
     <style>
         * {
             margin: 0;
@@ -462,6 +459,19 @@
 
         // 页面加载时更新预览
         window.onload = updatePreviews;
+
+        // 注册 Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful');
+                    })
+                    .catch(err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
     </script>
 </body>
 </html>
