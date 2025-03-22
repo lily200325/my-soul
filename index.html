@@ -405,7 +405,7 @@
             
             if (text) {
                 const items = getItems(currentCategory);
-                items.unshift(text);  // 添加到开头
+                items.push(text);     // 添加到末尾
                 saveItems(currentCategory, items);
                 
                 document.getElementById('modal').style.display = 'none';
@@ -449,7 +449,7 @@
                 const preview = document.getElementById(`${category}-preview`);
                 preview.innerHTML = '';
                 
-                items.slice(0, 3).forEach(item => {
+                items.slice(-3).forEach(item => {  // 显示最后三条记录
                     const li = document.createElement('li');
                     li.textContent = item;
                     preview.appendChild(li);
